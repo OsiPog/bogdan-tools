@@ -1,11 +1,29 @@
 import sys # for command-line arguments
 import os # for file system
+import PIL # for image manipulation
+from PIL import Image
 
 # Custom Exceptions
 class OnlyNotEnoughImagesError(Exception):
+    TEXT = "A long image can only consist of 2 images or more."
     pass
 class WrongColourFormat(Exception):
+    TEXT = "{} is not in the right format, please use hexadecimal from '#000000' to '#FFFFFF' and don't forget the leading '#'."
     pass
+
+def hex_color_to_tuple(hex_: str, alpha: int):
+    if (len(hex_) != 7) or (hex_[0] != "#"): raise WrongColourFormat(
+        WrongColourFormat.TEXT.format(hex_))
+
+    try:
+        r: int = int(hex_[1:3], 16)
+        b: int = int(hex_[3:5], 16)
+        g: int = int(hex_[5:], 16)
+    except ValueError: raise WrongColourFormat(
+        WrongColourFormat.TEXT.format(hex_))
+    
+    if alpha: return (r, g, b, alpha)
+    else: return (r, g, b)
 
 def imgs2longimg(png_paths: list[str], output_path: str, max_width: int=None, 
                 max_height: int=None, background: str=None):
@@ -22,73 +40,61 @@ def imgs2longimg(png_paths: list[str], output_path: str, max_width: int=None,
         OnlyNotEnoughImagesError: If less than 2 input-images are provided.
         WrongColourFormat: If anything else but '#FFFFFF' is used as background.
     """
+
     if len(png_paths) < 2: raise OnlyNotEnoughImagesError(
-        "A long image can only be made out of 2 images or more.")
+        OnlyNotEnoughImagesError.TEXT)
 
-    # initialising pygame for image manipulation
-    import pygame
-    pygame.init()
 
-    img_surfaces: list[pygame.Surface] = []
+    pil_images: list = []
     # this will be the width of the most wide image at the end of the loop
     long_width: int = 0 
     # all heights all added up
     long_height: int = 0
     for png_path in png_paths:
         try:
-            surf = pygame.image.load(png_path)
+            image = Image.open(png_path, "r")
 
             # Error would happen one line above
             print(f"successfully loaded '{png_path}'.")
         
-        # Thank you pygame for providing such a specific exception type
-        except pygame.error: 
+        except PIL.UnidentifiedImageError: 
             print(f"failed loading of '{png_path}'. skipping it")
             continue
         
-        img_surfaces.append(surf)
-        long_width = max(surf.get_width(), long_width)
-        long_height += surf.get_height()
+        pil_images.append(image)
+        long_width = max(image.size[0], long_width)
+        long_height += image.size[1]
+
+    # if a background is specified get it
+    color = (0, 0, 0, 0)
+    if background: 
+        color = hex_color_to_tuple(background, alpha=255)
 
     # The long transparent image (as a pygame surface)
-    long_img: pygame.Surface = pygame.Surface((long_width, long_height), 
-                                                        pygame.SRCALPHA)
-    
-    # if background specified, fill it with it
-    if background:
-        try:
-            color = pygame.Color(background)
-        except ValueError: 
-            raise WrongColourFormat(
-            f"'{background}' is not in the right format, please use hexadecimal from '#000000' to '#FFFFFF' and don't forget the leading '#'.")
-        # Adding the background colour
-        long_img.fill(color)
+    long_image = Image.new("RGBA", (long_width, long_height), color)
     
     MIDDLE_X: int = round(long_width/2)
     current_height: int = 0
-    for surf in img_surfaces:
-        # top left will be the blitting position, but the image should be 
-        # centered anyway
-        blit_pos = (MIDDLE_X - round(surf.get_width()/2), current_height)
-        long_img.blit(surf, blit_pos)
-        current_height += surf.get_height()
+    for image in pil_images:
+        # getting the right offset so that the images are centered and above
+        # each other
+        paste_offset = (MIDDLE_X - round(image.size[0]/2), current_height)
+        
+        # This is faster than alpha_composite but has an unwanted side effect
+        # when using a background colour and an image with alpha pixels, 
+        # I personally won't have images with alpha pixels inside so I chose 
+        # speed here.
+        long_image.paste(image, paste_offset)
+        
+        current_height += image.size[1]
 
     # scaling long image according to max_height or max_width
-    if max_width:
-        width = long_img.get_width()
-        if max_width < width:
-            ratio = max_width/width  
-            long_img = pygame.transform.scale(long_img, (max_width, 
-                                               round(long_img.get_height()*ratio)))
-    if max_height:
-        height = long_img.get_height()
-        if max_height < height:
-            ratio = max_height/height 
-            long_img = pygame.transform.scale(long_img, (round(long_img.get_width()*ratio),
-                                               max_height))
+    if not max_width: max_width = long_image.size[0]
+    if not max_height: max_height = long_image.size[1]
+    long_image.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
 
     # saving the file to the specified file
-    pygame.image.save(long_img, output_path)
+    long_image.save(output_path)
     print(f"Saved image file to '{output_path}'")
 
 
