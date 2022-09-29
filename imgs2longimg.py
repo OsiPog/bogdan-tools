@@ -1,11 +1,27 @@
 import sys # for command-line arguments
 import os # for file system
 
+# Custom Exceptions
 class OnlyNotEnoughImagesError(Exception):
     pass
+class WrongColourFormat(Exception):
+    pass
 
-def png2longpng(png_paths: list[str], output_path, max_height=None, 
-                max_width=None):
+def imgs2longimg(png_paths: list[str], output_path: str, max_width: int=None, 
+                max_height: int=None, background: str=None):
+    """Connecting multiple images to one long image.
+
+    Args:
+        png_paths (list[str]): A list of all input-image paths.
+        output_path (str): The file path of the long output-image.
+        max_width (int, optional): Scale the image down if value exceeded.
+        max_height (int, optional): Scale the image down if value exceeded.
+        background (str, optional): Add a background colour to the image.
+
+    Raises:
+        OnlyNotEnoughImagesError: If less than 2 input-images are provided.
+        WrongColourFormat: If anything else but '#FFFFFF' is used as background.
+    """
     if len(png_paths) < 2: raise OnlyNotEnoughImagesError(
         "A long image can only be made out of 2 images or more.")
 
@@ -37,6 +53,17 @@ def png2longpng(png_paths: list[str], output_path, max_height=None,
     # The long transparent image (as a pygame surface)
     long_img: pygame.Surface = pygame.Surface((long_width, long_height), 
                                                         pygame.SRCALPHA)
+    
+    # if background specified, fill it with it
+    if background:
+        try:
+            color = pygame.Color(background)
+        except ValueError: 
+            raise WrongColourFormat(
+            f"'{background}' is not in the right format, please use hexadecimal from '#000000' to '#FFFFFF' and don't forget the leading '#'.")
+        # Adding the background colour
+        long_img.fill(color)
+    
     MIDDLE_X: int = round(long_width/2)
     current_height: int = 0
     for surf in img_surfaces:
@@ -47,7 +74,18 @@ def png2longpng(png_paths: list[str], output_path, max_height=None,
         current_height += surf.get_height()
 
     # scaling long image according to max_height or max_width
-
+    if max_width:
+        width = long_img.get_width()
+        if max_width < width:
+            ratio = max_width/width  
+            long_img = pygame.transform.scale(long_img, (max_width, 
+                                               round(long_img.get_height()*ratio)))
+    if max_height:
+        height = long_img.get_height()
+        if max_height < height:
+            ratio = max_height/height 
+            long_img = pygame.transform.scale(long_img, (round(long_img.get_width()*ratio),
+                                               max_height))
 
     # saving the file to the specified file
     pygame.image.save(long_img, output_path)
@@ -65,11 +103,9 @@ def main():
             output-file -d input-directory [options]
 
     Options:
-        -h\tScaling the image down to a certain height if it exceeds it
-        -w\tScaling the image down to a certain width if it exceeds it
-        \t(if both options are enabled be aware that the image may be stretched)
-        -bg\tAdds a background colour to the output image
-
+        -h <int>\tScaling the image down to a certain height if it exceeds it
+        -w <int>\tScaling the image down to a certain width if it exceeds it
+        -bg <hex>\tAdds a background colour to the output image (e. g. '#FFFFFF' for white)
 """)
         exit()
 
@@ -85,7 +121,23 @@ def main():
         for file in os.listdir(folder):
             png_paths.append(f"{folder}/{file}")
 
-    png2longpng(png_paths, output_path)
+    # Checking for any options
+    
+    # initialising variable
+    max_width: int = None
+    # if exists convert to int and take value of index after option indicator
+    try: max_width = int(sys.argv[sys.argv.index("-w")+1])
+    except ValueError: pass
+    
+    max_height: int = None
+    try: max_height = int(sys.argv[sys.argv.index("-h")+1])
+    except ValueError: pass
+    
+    background: int = None
+    try: background = sys.argv[sys.argv.index("-bg")+1]
+    except ValueError: pass
+    print(output_path, max_width, max_height, background)
+    imgs2longimg(png_paths, output_path, max_width, max_height, background)
 
 
 if __name__ == "__main__":
