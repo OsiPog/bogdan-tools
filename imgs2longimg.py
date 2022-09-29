@@ -1,8 +1,15 @@
 import sys # for command-line arguments
 import os # for file system
 
+class OnlyNotEnoughImagesError(Exception):
+    pass
+
 def png2longpng(png_paths: list[str], output_path):
-    import pygame # for image manipulation
+    if len(png_paths) < 2: raise OnlyNotEnoughImagesError(
+        "A long image can only be made out of 2 images or more.")
+
+    # initialising pygame for image manipulation
+    import pygame
     pygame.init()
 
     img_surfaces: list[pygame.Surface] = []
@@ -45,12 +52,12 @@ def png2longpng(png_paths: list[str], output_path):
 
 def main():
     if len(sys.argv) < 3:
-        print("""Usage:
+        print("""Usage: python imgs2longimg.py <arguments>
     All image files as single arguments:
-        python imgs2longimg.py output-file input-file1 input-file2 [input-file3, ...]
+        output-file input-file1 input-file2 [input-file3, ...] [options]
 
-    Use all image files inside of a folder:
-        python imgs2longimg.py output-file -d input-directory
+    Use all image files inside a folder:
+        imgs2longimg.py output-file -d input-directory [options]
 """)
         exit()
 
