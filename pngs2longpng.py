@@ -10,10 +10,10 @@ def main():
     if len(sys.argv) < 3:
         print("""Usage:
     All image files as single arguments:
-        python png2longpng.py output-file input-file1 input-file2 [input-file3, ...]
+        python pngs2longpng.py output-file input-file1 input-file2 [input-file3, ...]
 
     Use all image files inside of a folder:
-        python png2longpng.py output-file -d input-directory
+        python pngs2longpng.py output-file -d input-directory
 """)
         exit()
 
