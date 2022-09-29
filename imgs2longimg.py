@@ -1,10 +1,6 @@
 import sys # for command-line arguments
 import os # for file system
 
-# custom exceptions
-class Custom(Exception):
-    pass
-
 def png2longpng(png_paths: list[str], output_path):
     import pygame # for image manipulation
     pygame.init()
