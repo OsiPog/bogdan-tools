@@ -11,6 +11,28 @@ class WrongColourFormat(Exception):
     TEXT = "{} is not in the right format, please use hexadecimal from '#000000' to '#FFFFFF' and don't forget the leading '#'."
     pass
 
+def element_after(element, arr: list, convert_to=None):
+    """Returns the next element after the given element in the provided list.
+
+    Args:
+        arr (list): list which should be searched through
+        element (any): the element before the wanted element in the list.
+        convert_to (any): converts the result to some data-type.
+
+    Returns:
+        Any: Depends on the datatype of the element. 
+        NoneType: If the given element isn't in the list or is the last element.
+    """
+    result = None
+    try: result = arr[arr.index(element)+1]
+    except ValueError: pass
+    
+    try:
+        if convert_to is not None: result = convert_to(result)
+    except TypeError: pass
+    
+    return result
+
 def hex_color_to_tuple(hex_: str, alpha: int):
     if (len(hex_) != 7) or (hex_[0] != "#"): raise WrongColourFormat(
         WrongColourFormat.TEXT.format(hex_))
@@ -127,23 +149,10 @@ def main():
         for file in os.listdir(folder):
             png_paths.append(f"{folder}/{file}")
 
-    # Checking for any options
-    
-    # initialising variable
-    max_width: int = None
-    # if exists convert to int and take value of index after option indicator
-    try: max_width = int(sys.argv[sys.argv.index("-w")+1])
-    except ValueError: pass
-    
-    max_height: int = None
-    try: max_height = int(sys.argv[sys.argv.index("-h")+1])
-    except ValueError: pass
-    
-    background: int = None
-    try: background = sys.argv[sys.argv.index("-bg")+1]
-    except ValueError: pass
-    print(output_path, max_width, max_height, background)
-    imgs2longimg(png_paths, output_path, max_width, max_height, background)
+    imgs2longimg(png_paths, output_path, 
+                 max_width = element_after("-w", sys.argv, int), 
+                 max_height = element_after("-h", sys.argv, int), 
+                 background = element_after("-bg", sys.argv))
 
 
 if __name__ == "__main__":
