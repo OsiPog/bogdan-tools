@@ -1,6 +1,6 @@
 import sys # for command-line arguments
 import os # for file system
-from PyPDF2 import PdfReader # toget pdf page size and count
+from PyPDF2 import PdfReader # to get pdf page size and count
 import xml.etree.ElementTree as gfg # for xml creation
 import gzip # gzipping .xml to .xopp
 
@@ -25,7 +25,6 @@ def element_after(element, arr: list, convert_to=None):
     except TypeError: pass
         
     return result
-    
 
 def pdf2xopp(pdf_path: str, output_path: str, pdf_path_in_xopp: str=None):
     # If no special path for the xopp file is given, take the available pdf 

@@ -33,7 +33,7 @@ def element_after(element, arr: list, convert_to=None):
     
     return result
 
-def hex_color_to_tuple(hex_: str, alpha: int):
+def hex_color_to_tuple(hex_: str, alpha: int=None):
     if (len(hex_) != 7) or (hex_[0] != "#"): raise WrongColourFormat(
         WrongColourFormat.TEXT.format(hex_))
 
