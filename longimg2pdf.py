@@ -64,15 +64,18 @@ def longimg2pdf(input_path: str, output_path: str, aspect_ratio: float = None,
         # image (just in case)
         if i == page_amount: y1 = long_image.height
         
-        # Append a cropped image to the list
+        # creating the background (A pdf cannot be transparent)
         background= Image.new("RGBA", (long_image.width, y1-y0), 
                              hex_color_to_tuple(bg_color))
-        image = long_image.crop((0, y0, long_image.width, y1))
-        background.alpha_composite(image, 
-                                   (int(background.width/2-image.width/2),0))
-
-        image = background
-        pil_images.append(image.convert("RGB"))
+        # cropping the page out of the long image
+        cropped = long_image.crop((0, y0, long_image.width, y1))
+        
+        # paste the cropped image onto the background
+        background.alpha_composite(cropped, 
+                                   (int(background.width/2-cropped.width/2),0))
+        # Append the background image (with the cropped image on top) 
+        # to the list
+        pil_images.append(background.convert("RGB"))
     
     # Save the images (pages) to a pdf file
     pil_images[0].save(output_path, "PDF", resolution=100.0, save_all=True,
