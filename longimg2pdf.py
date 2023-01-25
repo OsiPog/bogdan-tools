@@ -46,7 +46,7 @@ def hex_color_to_tuple(hex_: str, alpha: int=None):
 
 def longimg2pdf(input_path: str, output_path: str, aspect_ratio: float = None,
                 bg_color: str=None):
-    if aspect_ratio is None: aspect_ratio = 0.70707 # DIN A4 paper format
+    if aspect_ratio is None: aspect_ratio = 210/297 # DIN A4 paper format
     if bg_color is None: bg_color = "#FFFFFF" # white
     
     long_image = Image.open(input_path)
@@ -74,7 +74,7 @@ def longimg2pdf(input_path: str, output_path: str, aspect_ratio: float = None,
         background.alpha_composite(cropped, 
                                    (int(background.width/2-cropped.width/2),0))
         # Append the background image (with the cropped image on top) 
-        # to the list
+        # to the list.
         pil_images.append(background.convert("RGB"))
     
     # Save the images (pages) to a pdf file
