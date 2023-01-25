@@ -40,7 +40,6 @@ def pdf2xopp(pdf_path: str, output_path: str, pdf_path_in_xopp: str=None):
     pdf = PdfReader(pdf_path)
     
     for i,page in enumerate(pdf.pages):
-
         page_xml = gfg.SubElement(root, "page")
         page_xml.set("width", str(page.mediabox[2]))
         page_xml.set("height", str(page.mediabox[3]))
