@@ -40,13 +40,10 @@ def pdf2xopp(pdf_path: str, output_path: str, pdf_path_in_xopp: str=None):
     pdf = PdfReader(pdf_path)
     
     for i,page in enumerate(pdf.pages):
-        # Determine the page size
-        xopp_page_height: float = 841.889764 # Value taken from a default xopp document
-        xopp_page_width: float = xopp_page_height * float(page.mediabox[2]/page.mediabox[3])
-        
+
         page_xml = gfg.SubElement(root, "page")
-        page_xml.set("width", str(xopp_page_width))
-        page_xml.set("height", str(xopp_page_height))
+        page_xml.set("width", str(page.mediabox[2]))
+        page_xml.set("height", str(page.mediabox[3]))
         
         bg_xml = gfg.SubElement(page_xml, "background")
         bg_xml.set("type", "pdf")
