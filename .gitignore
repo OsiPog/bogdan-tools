@@ -4,3 +4,4 @@
 *.txt
 test.py
 *.pdf
+poppler*
