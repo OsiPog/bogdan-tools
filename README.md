@@ -1,6 +1,6 @@
 # bogdan-tools
 
-This repository contains scripts I used in my [Bogdan](https://github.com/OsiPog/bogdan) project. These scripts are quite modular so feel free to use them yourself.
+This repository contains scripts I used in my [Bogdan](https://github.com/OsiPog/bogdan) (abandoned) project. These scripts are quite modular so feel free to use them yourself.
 
 
 
