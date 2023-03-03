@@ -27,6 +27,12 @@ def pdf2xopp(pdf_path: str, xopp_path: str, poppler_path: str = None,
         page_xml = gfg.SubElement(root, "page")
         page_xml.set("width", str(xopp_page_width))
         page_xml.set("height", str(xopp_page_height))
+
+        # set a background (checked paper)
+        bg_xml = gfg.SubElement(page_xml, "background")
+        bg_xml.set("type", "solid")
+        bg_xml.set("color", "#ffffffff")
+        bg_xml.set("style", "graph")
         
         # The image element is wrapped by a layer element
         layer_xml = gfg.SubElement(page_xml, "layer")
@@ -43,7 +49,7 @@ def pdf2xopp(pdf_path: str, xopp_path: str, poppler_path: str = None,
         # downscale the image to a given maximum
         if not max_width: max_width = page.size[0]
         if not max_height: max_height = page.size[1]
-        page.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
+        page.thumbnail((max_width, max_height))
         
         bytes_buffer = BytesIO()
         page.save(bytes_buffer, format="PNG")
@@ -58,12 +64,12 @@ def pdf2xopp(pdf_path: str, xopp_path: str, poppler_path: str = None,
         
 def main():
     if len(sys.argv) < 3:
-        print("""Usage: python longimg2pdf.py output-file.xopp input-file.pdf [options]""")
+        print("""Usage: python pdf2xopp.py output-file.xopp input-file.pdf [options]""")
         exit()
 
     # Argument positions as stated in the help message.
-    pdf_path: str = sys.argv[1]
-    xopp_path: str = sys.argv[2]
+    pdf_path: str = sys.argv[2]
+    xopp_path: str = sys.argv[1]
 
     pdf2xopp(pdf_path, xopp_path)
 
